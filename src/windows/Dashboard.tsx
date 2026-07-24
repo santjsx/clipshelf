@@ -32,7 +32,11 @@ import {
   Info,
 } from 'lucide-react';
 
-export const DashboardWindow: React.FC = () => {
+interface DashboardWindowProps {
+  onOpenLanding?: () => void;
+}
+
+export const DashboardWindow: React.FC<DashboardWindowProps> = ({ onOpenLanding }) => {
   const {
     clips,
     categories,
@@ -193,10 +197,20 @@ export const DashboardWindow: React.FC = () => {
             {sampledColor ? sampledColor : 'Color Picker'}
           </button>
 
+          {onOpenLanding && (
+            <button
+              onClick={onOpenLanding}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-950/40 hover:bg-blue-900/60 border border-blue-800/60 hover:border-blue-500/50 text-xs font-semibold text-blue-300 transition shadow-sm"
+              title="View Scrollytelling Web Showcase"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
+              Web Story
+            </button>
+          )}
+
           <button
             onClick={() => setIsSettingsOpen(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 transition"
-            title="Open Application Settings"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 hover:border-slate-700 text-xs font-medium text-slate-300 transition"
           >
             <SettingsIcon className="w-3.5 h-3.5 text-slate-400" />
             Settings

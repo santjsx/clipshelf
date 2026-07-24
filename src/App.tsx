@@ -4,10 +4,12 @@ import { ShelfWindow } from './windows/Shelf';
 import { QuickPasteWindow } from './windows/QuickPaste';
 import { DashboardWindow } from './windows/Dashboard';
 import { SettingsWindow } from './windows/Settings';
+import { LandingPage } from './windows/LandingPage';
 import { ToastProvider } from './components/Toast';
 
 export const App: React.FC = () => {
   const [windowLabel, setWindowLabel] = useState<string>('dashboard');
+  const [currentView, setCurrentView] = useState<'dashboard' | 'landing'>('dashboard');
 
   useEffect(() => {
     try {
@@ -16,7 +18,6 @@ export const App: React.FC = () => {
         setWindowLabel(appWindow.label);
       }
     } catch {
-      // Fallback for non-Tauri browser preview
       setWindowLabel('dashboard');
     }
   }, []);
@@ -29,9 +30,14 @@ export const App: React.FC = () => {
         return <QuickPasteWindow />;
       case 'settings':
         return <SettingsWindow />;
+      case 'landing':
+        return <LandingPage onOpenDashboard={() => setCurrentView('dashboard')} />;
       case 'dashboard':
       default:
-        return <DashboardWindow />;
+        if (currentView === 'landing') {
+          return <LandingPage onOpenDashboard={() => setCurrentView('dashboard')} />;
+        }
+        return <DashboardWindow onOpenLanding={() => setCurrentView('landing')} />;
     }
   };
 
