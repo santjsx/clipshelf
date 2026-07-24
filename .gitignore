@@ -1,0 +1,30 @@
+# Dependencies
+node_modules
+.pnpm-store
+
+# Rust / Tauri build artifacts
+src-tauri/target
+target
+
+# Vite / Dist build
+dist
+dist-isolation
+
+# Documentation MD files requested to be excluded
+00-README.md
+01-PRD.md
+02-TECHNICAL-ARCHITECTURE.md
+03-FEATURE-SPECIFICATIONS.md
+04-DATABASE-SCHEMA.md
+05-UI-UX-DESIGN.md
+06-DEVELOPMENT-ROADMAP.md
+0*.md
+RELEASE_NOTES.md
+
+# Environment / OS / IDE
+.env
+.env.local
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
