@@ -385,7 +385,7 @@ export const DashboardWindow: React.FC = () => {
             </div>
           ) : (
             /* Masonry Bento Grid View */
-            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-0">
+            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-6">
               {clips.map((clip) => (
                 <ClipCard key={clip.id} clip={clip} onPin={togglePin} onDelete={deleteClip} />
               ))}

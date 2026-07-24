@@ -18,7 +18,6 @@ import {
   ZoomIn,
   ExternalLink,
   Maximize2,
-  Quote,
 } from 'lucide-react';
 
 interface ClipCardProps {
@@ -126,7 +125,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
         tabIndex={0}
         role="button"
         aria-label={`Bento card: ${clip.content_type}`}
-        className={`break-inside-avoid inline-block w-full min-h-[160px] flex flex-col justify-between group bg-slate-900/90 hover:bg-slate-800/90 border rounded-2xl p-4 transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/80 mb-4 ${
+        className={`break-inside-avoid inline-block w-full min-h-[165px] flex flex-col justify-between group bg-slate-900/90 hover:bg-slate-800/90 border rounded-2xl p-4.5 transition-all duration-200 shadow-md hover:shadow-xl cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/80 mb-6 ${
           clip.is_pinned
             ? 'border-amber-500/60 shadow-amber-500/5 bg-slate-900/95 ring-1 ring-amber-500/30'
             : 'border-slate-800 hover:border-blue-500/50'
@@ -134,7 +133,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
       >
         <div>
           {/* Bento Header */}
-          <div className="flex items-center justify-between mb-3">
+          <div className="flex items-center justify-between mb-3.5">
             <div className="flex items-center gap-2">
               <div className="p-1.5 rounded-lg bg-slate-950 border border-slate-800 shadow-inner">
                 {renderTypeIcon(clip.content_type)}
@@ -153,11 +152,11 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
             </div>
           </div>
 
-          {/* Bento Content Area - Generous Height & Rich Text Preview */}
+          {/* Bento Content Area - 3-4 Line Visible Text Preview & Generous Padding */}
           <div className="my-2">
             {/* COLOR TYPE */}
             {clip.content_type === 'color' && clip.text_content ? (
-              <div className="flex items-center gap-3 p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 min-h-[85px]">
+              <div className="flex items-center gap-3.5 p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 min-h-[90px]">
                 <span
                   className="w-10 h-10 rounded-xl border border-white/20 shadow-md shrink-0"
                   style={{ backgroundColor: clip.text_content }}
@@ -169,13 +168,13 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
               </div>
             ) : /* LINK TYPE */
             clip.content_type === 'link' && clip.text_content ? (
-              <div className="p-3.5 bg-blue-950/30 rounded-xl border border-blue-900/40 min-h-[85px] space-y-1.5 flex flex-col justify-center">
+              <div className="p-3.5 bg-blue-950/30 rounded-xl border border-blue-900/40 min-h-[90px] space-y-1.5 flex flex-col justify-center">
                 <a
                   href={clip.text_content}
                   target="_blank"
                   rel="noopener noreferrer"
                   onClick={(e) => e.stopPropagation()}
-                  className="text-xs font-mono text-blue-400 hover:underline flex items-center gap-1.5 break-all line-clamp-3 leading-relaxed"
+                  className="text-xs font-mono text-blue-400 hover:underline flex items-center gap-1.5 break-all line-clamp-4 leading-relaxed"
                 >
                   <span>{clip.text_content}</span>
                   <ExternalLink className="w-3.5 h-3.5 shrink-0 opacity-80" />
@@ -184,13 +183,13 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
             ) : /* CODE TYPE */
             clip.content_type === 'code' && clip.text_content ? (
               <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800/90 font-mono text-xs text-cyan-300 leading-relaxed overflow-hidden max-h-48 relative min-h-[90px] group/code">
-                <pre className="whitespace-pre-wrap break-all line-clamp-6">{clip.text_content}</pre>
+                <pre className="whitespace-pre-wrap break-all line-clamp-4">{clip.text_content}</pre>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsTextExpandOpen(true);
                   }}
-                  className="absolute bottom-2 right-2 p-1 bg-slate-900/90 border border-slate-700 rounded-lg text-slate-400 hover:text-cyan-400 opacity-0 group-hover/code:opacity-100 transition shadow-md"
+                  className="absolute bottom-2.5 right-2.5 p-1 bg-slate-900/90 border border-slate-700 rounded-lg text-slate-400 hover:text-cyan-400 opacity-0 group-hover/code:opacity-100 transition shadow-md"
                   title="Expand code view"
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
@@ -226,44 +225,29 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
                 )}
               </div>
             ) : (clip.content_type === 'image' || clip.content_type === 'screenshot') ? (
-              <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3 text-slate-400 min-h-[85px]">
+              <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 flex items-center gap-3 text-slate-400 min-h-[90px]">
                 <ImageIcon className="w-6 h-6 text-purple-400 shrink-0" />
                 <div className="text-[11px]">
                   <p className="font-semibold text-slate-300">Visual Screenshot Clip</p>
                   <p className="text-[10px] text-slate-500">Click card to copy image</p>
                 </div>
               </div>
-            ) : /* STANDARD TEXT TYPE - Generous Height & Expand Trigger */
-            textVal.trim() !== '' ? (
-              <div className="p-3.5 bg-slate-950/70 rounded-xl border border-slate-800/90 font-sans text-xs text-slate-100 leading-relaxed whitespace-pre-wrap break-words line-clamp-5 min-h-[85px] relative group/txt flex items-start justify-between">
-                <span className="w-full pr-6">{textVal}</span>
+            ) : /* STANDARD TEXT TYPE - Guaranteed 3-4 Line Visible Preview */
+            (
+              <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800/90 font-sans text-xs text-slate-100 leading-relaxed whitespace-pre-wrap break-words line-clamp-4 min-h-[90px] relative group/txt flex items-start justify-between">
+                <span className="w-full pr-6 text-slate-100">
+                  {textVal.trim() !== '' ? textVal : 'Copied Text Snippet (Click to view full text)'}
+                </span>
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsTextExpandOpen(true);
                   }}
                   className="absolute bottom-2.5 right-2.5 p-1 bg-slate-900/90 border border-slate-700 rounded-lg text-slate-400 hover:text-blue-400 opacity-0 group-hover/txt:opacity-100 transition shadow-md"
-                  title="Expand text modal"
+                  title="Expand full text"
                 >
                   <Maximize2 className="w-3.5 h-3.5" />
                 </button>
-              </div>
-            ) : (
-              <div
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsTextExpandOpen(true);
-                }}
-                className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800/80 flex items-center justify-between text-slate-300 min-h-[85px] hover:border-blue-500/40 transition cursor-pointer"
-              >
-                <div className="flex items-center gap-3">
-                  <Quote className="w-5 h-5 text-blue-400 shrink-0" />
-                  <div>
-                    <p className="font-semibold text-xs text-slate-200">Captured Text Clip</p>
-                    <p className="text-[10px] text-slate-500">Click to view full text & copy</p>
-                  </div>
-                </div>
-                <Maximize2 className="w-3.5 h-3.5 text-slate-500" />
               </div>
             )}
           </div>
@@ -284,18 +268,16 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
           </div>
 
           <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition duration-150 flex items-center gap-1">
-            {textVal.trim() !== '' && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setIsTextExpandOpen(true);
-                }}
-                className="p-1 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition"
-                title="Expand full text"
-              >
-                <Maximize2 className="w-3.5 h-3.5" />
-              </button>
-            )}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsTextExpandOpen(true);
+              }}
+              className="p-1 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition"
+              title="Expand full text"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={handleCopy}
               className="p-1 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition"
