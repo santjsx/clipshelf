@@ -16,6 +16,14 @@ export const App: React.FC = () => {
       const urlParams = new URLSearchParams(window.location.search);
       if (urlParams.get('view') === 'landing') {
         setCurrentView('landing');
+      } else if (urlParams.get('view') === 'dashboard') {
+        setCurrentView('dashboard');
+      } else {
+        // If running in browser / GitHub Pages, default to landing page
+        const isTauri = !!(window as any).__TAURI_INTERNALS__ || !!(window as any).__TAURI__;
+        if (!isTauri) {
+          setCurrentView('landing');
+        }
       }
 
       const appWindow = getCurrentWindow();
@@ -23,7 +31,12 @@ export const App: React.FC = () => {
         setWindowLabel(appWindow.label);
       }
     } catch {
+      // Non-Tauri web browser fallback
       setWindowLabel('dashboard');
+      const isTauri = !!(window as any).__TAURI_INTERNALS__ || !!(window as any).__TAURI__;
+      if (!isTauri) {
+        setCurrentView('landing');
+      }
     }
   }, []);
 
