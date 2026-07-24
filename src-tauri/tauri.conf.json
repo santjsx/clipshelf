@@ -1,0 +1,74 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "ClipShelf",
+  "version": "0.1.0",
+  "identifier": "com.clipshelf.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "dashboard",
+        "title": "ClipShelf — Dashboard",
+        "width": 1100,
+        "height": 700,
+        "resizable": true,
+        "visible": true,
+        "center": true
+      },
+      {
+        "label": "shelf",
+        "title": "ClipShelf — Shelf",
+        "width": 140,
+        "height": 26,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "shadow": false,
+        "resizable": true,
+        "visible": false
+      },
+      {
+        "label": "quick-paste",
+        "title": "ClipShelf — Quick Paste",
+        "width": 800,
+        "height": 500,
+        "decorations": false,
+        "transparent": true,
+        "alwaysOnTop": true,
+        "skipTaskbar": true,
+        "resizable": false,
+        "visible": false,
+        "center": true
+      },
+      {
+        "label": "settings",
+        "title": "ClipShelf — Settings",
+        "width": 800,
+        "height": 600,
+        "resizable": true,
+        "visible": false,
+        "center": true
+      }
+    ],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ]
+  }
+}

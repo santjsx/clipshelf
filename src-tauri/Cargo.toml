@@ -1,0 +1,28 @@
+[package]
+name = "clipshelf"
+version = "0.1.0"
+description = "Visual Clipboard History Manager for Windows"
+authors = ["ClipShelf Team"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2.0", features = [] }
+
+[dependencies]
+tauri = { version = "2.0", features = ["tray-icon"] }
+tauri-plugin-shell = "2.0"
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+rusqlite = { version = "0.31", features = ["bundled-full"] }
+tokio = { version = "1.38", features = ["full"] }
+dirs = "5.0"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+log = "0.4"
+env_logger = "0.11"
+regex = "1.10"
+base64 = "0.22"
+windows-sys = { version = "0.59", features = ["Win32_Foundation", "Win32_UI_WindowsAndMessaging", "Win32_UI_Input_KeyboardAndMouse", "Win32_System_DataExchange", "Win32_System_Threading", "Win32_UI_Shell", "Win32_Graphics_Gdi", "Win32_System_Memory"] }
+
+[lib]
+name = "clipshelf_lib"
+crate-type = ["lib"]
