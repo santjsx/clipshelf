@@ -3,7 +3,20 @@ import { convertFileSrc } from '@tauri-apps/api/core';
 import { Clip } from '../hooks/useClips';
 import { useToast } from './Toast';
 import { ImageModal } from './ImageModal';
-import { Code, FileText, Link as LinkIcon, Palette, File, Copy, Pin, Trash2, Clock, Image as ImageIcon } from 'lucide-react';
+import { TextModal } from './TextModal';
+import {
+  Code,
+  FileText,
+  Link as LinkIcon,
+  Palette,
+  File,
+  Copy,
+  Pin,
+  Trash2,
+  Clock,
+  Image as ImageIcon,
+  Maximize2,
+} from 'lucide-react';
 
 interface ClipRowProps {
   clip: Clip;
@@ -14,6 +27,7 @@ interface ClipRowProps {
 export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
   const { showToast } = useToast();
   const [isZoomOpen, setIsZoomOpen] = useState(false);
+  const [isTextExpandOpen, setIsTextExpandOpen] = useState(false);
 
   const renderTypeIcon = (type: string) => {
     switch (type) {
@@ -30,7 +44,7 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
         return <ImageIcon className="w-4 h-4 text-purple-400" />;
       case 'text':
       default:
-        return <FileText className="w-4 h-4 text-slate-400" />;
+        return <FileText className="w-4 h-4 text-blue-400" />;
     }
   };
 
@@ -92,6 +106,8 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
     }
   };
 
+  const textVal = clip.text_content || clip.asset_path || '';
+
   return (
     <>
       <div
@@ -105,7 +121,7 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
         tabIndex={0}
         role="button"
         aria-label={`Clipboard row: ${clip.content_type}`}
-        className={`group bg-slate-900/70 hover:bg-slate-800/90 border rounded-xl p-3.5 transition duration-150 flex items-center justify-between shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/80 ${
+        className={`group bg-slate-900/80 hover:bg-slate-800/90 border rounded-xl p-3.5 transition duration-150 flex items-center justify-between shadow-sm cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500/80 ${
           clip.is_pinned ? 'border-amber-500/60 shadow-amber-500/5 bg-slate-900/95' : 'border-slate-800 hover:border-blue-500/40'
         }`}
       >
@@ -127,14 +143,14 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
               )}
             </div>
 
-            <div className="text-xs font-mono text-slate-200 truncate">
+            <div className="text-xs font-sans text-slate-100 truncate">
               {clip.content_type === 'color' && clip.text_content ? (
                 <div className="flex items-center gap-2">
                   <span
                     className="w-4 h-4 rounded border border-white/20 inline-block"
                     style={{ backgroundColor: clip.text_content }}
                   />
-                  <span>{clip.text_content}</span>
+                  <span className="font-mono">{clip.text_content}</span>
                 </div>
               ) : imageSrc ? (
                 <div className="flex items-center gap-2">
@@ -151,10 +167,10 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
                     {clip.ocr_text || 'Visual Image Content (Click to expand)'}
                   </span>
                 </div>
-              ) : (clip.text_content && clip.text_content.trim() !== '') ? (
-                clip.text_content
+              ) : textVal.trim() !== '' ? (
+                <span>{textVal}</span>
               ) : (
-                <span className="text-slate-500 italic">Empty text item</span>
+                <span className="text-slate-400 font-semibold">Captured Text Snippet (Click to view full text)</span>
               )}
             </div>
           </div>
@@ -167,6 +183,16 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
           </span>
 
           <div className="opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition duration-150 flex items-center gap-1 border-l border-slate-800 pl-3">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setIsTextExpandOpen(true);
+              }}
+              className="p-1.5 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition"
+              title="Expand full text"
+            >
+              <Maximize2 className="w-3.5 h-3.5" />
+            </button>
             <button
               onClick={handleCopy}
               className="p-1.5 hover:bg-slate-800 hover:text-blue-400 rounded-lg transition"
@@ -200,6 +226,10 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
 
       {isZoomOpen && imageSrc && (
         <ImageModal imageSrc={imageSrc} onClose={() => setIsZoomOpen(false)} />
+      )}
+
+      {isTextExpandOpen && (
+        <TextModal clip={clip} onClose={() => setIsTextExpandOpen(false)} onPin={onPin} />
       )}
     </>
   );
