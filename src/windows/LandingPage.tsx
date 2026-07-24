@@ -89,9 +89,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
             </button>
             <a
               href={downloadExeUrl}
-              className="px-4.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-500/10 transition-all flex items-center gap-2"
+              className="px-5 py-2.5 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-400/20 transition-all flex items-center gap-2 shrink-0 whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5 text-slate-950" />
               Download .EXE
             </a>
           </div>
