@@ -107,10 +107,10 @@ export const useClips = () => {
   const clearAllClips = async () => {
     try {
       await invoke('clear_all_clips');
-      setClips([]);
+      setClips((prev) => prev.filter((c) => c.is_pinned));
     } catch (e) {
       console.log('Clear all clips error:', e);
-      setClips([]);
+      setClips((prev) => prev.filter((c) => c.is_pinned));
     }
   };
 

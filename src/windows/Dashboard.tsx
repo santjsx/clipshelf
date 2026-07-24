@@ -26,6 +26,10 @@ import {
   AlertTriangle,
   Sparkles,
   Command,
+  Settings as SettingsIcon,
+  Sliders,
+  Keyboard,
+  Info,
 } from 'lucide-react';
 
 export const DashboardWindow: React.FC = () => {
@@ -48,9 +52,16 @@ export const DashboardWindow: React.FC = () => {
   const { showToast } = useToast();
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
   const [isClearModalOpen, setIsClearModalOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatColor, setNewCatColor] = useState('#3b82f6');
   const [sampledColor, setSampledColor] = useState<string | null>(null);
+
+  // Settings State
+  const [settingsTab, setSettingsTab] = useState<'general' | 'privacy' | 'shortcuts' | 'about'>('general');
+  const [startOnLogin, setStartOnLogin] = useState(true);
+  const [privacyFilterEnabled, setPrivacyFilterEnabled] = useState(true);
+  const [accentColor, setAccentColor] = useState<'blue' | 'cyan' | 'purple' | 'emerald'>('blue');
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -66,6 +77,7 @@ export const DashboardWindow: React.FC = () => {
       if (e.key === 'Escape') {
         if (isCategoryModalOpen) setIsCategoryModalOpen(false);
         else if (isClearModalOpen) setIsClearModalOpen(false);
+        else if (isSettingsOpen) setIsSettingsOpen(false);
         else if (searchQuery) setSearchQuery('');
         else searchInputRef.current?.blur();
       }
@@ -73,7 +85,7 @@ export const DashboardWindow: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isCategoryModalOpen, isClearModalOpen, searchQuery, setSearchQuery]);
+  }, [isCategoryModalOpen, isClearModalOpen, isSettingsOpen, searchQuery, setSearchQuery]);
 
   const handleCreateCategory = (e: React.FormEvent) => {
     e.preventDefault();
@@ -103,7 +115,7 @@ export const DashboardWindow: React.FC = () => {
   const handleConfirmClearAll = () => {
     clearAllClips();
     setIsClearModalOpen(false);
-    showToast('Clipboard history cleared', 'info');
+    showToast('Unpinned history cleared (pinned items preserved)', 'info');
   };
 
   const filterTabs = [
@@ -115,6 +127,8 @@ export const DashboardWindow: React.FC = () => {
     { id: 'file', label: 'Files', icon: File },
     { id: 'color', label: 'Colors', icon: Palette },
   ];
+
+  const unpinnedCount = clips.filter((c) => !c.is_pinned).length;
 
   return (
     <div className="w-full h-screen bg-slate-950 text-slate-100 flex flex-col overflow-hidden select-none font-sans">
@@ -163,7 +177,7 @@ export const DashboardWindow: React.FC = () => {
           )}
         </div>
 
-        {/* Color Sampler, Clear All & View Mode Controls */}
+        {/* Color Sampler, Settings, Clear All & View Mode Controls */}
         <div className="flex items-center gap-2.5">
           <button
             onClick={handlePickColor}
@@ -175,9 +189,18 @@ export const DashboardWindow: React.FC = () => {
           </button>
 
           <button
+            onClick={() => setIsSettingsOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-xs font-medium text-slate-300 transition"
+            title="Open Application Settings"
+          >
+            <SettingsIcon className="w-3.5 h-3.5 text-slate-400" />
+            Settings
+          </button>
+
+          <button
             onClick={() => setIsClearModalOpen(true)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 hover:bg-rose-950/40 border border-slate-800 hover:border-rose-700/50 text-xs font-medium text-slate-400 hover:text-rose-400 transition"
-            title="Clear all stored clips"
+            title="Clear unpinned clips history"
           >
             <Trash2 className="w-3.5 h-3.5" />
             Clear History
@@ -189,17 +212,17 @@ export const DashboardWindow: React.FC = () => {
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${
                 viewMode === 'card' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Card Grid View"
+              title="Bento Masonry Grid View"
             >
               <LayoutGrid className="w-3.5 h-3.5" />
-              Cards
+              Bento
             </button>
             <button
               onClick={() => setViewMode('list')}
               className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium transition ${
                 viewMode === 'list' ? 'bg-blue-600 text-white shadow-md' : 'text-slate-400 hover:text-slate-200'
               }`}
-              title="Compact List View"
+              title="Compact Row List View"
             >
               <ListIcon className="w-3.5 h-3.5" />
               List
@@ -212,178 +235,146 @@ export const DashboardWindow: React.FC = () => {
               title="Kanban Board View"
             >
               <Columns3 className="w-3.5 h-3.5" />
-              Board
+              Kanban
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Workspace Area */}
+      {/* Main App Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Sidebar Navigation */}
-        <aside className="w-56 border-r border-slate-800/80 bg-slate-950/40 p-3.5 flex flex-col justify-between shrink-0">
+        {/* Left Navigation Sidebar */}
+        <aside className="w-56 border-r border-slate-800/80 bg-slate-900/40 p-3 flex flex-col justify-between shrink-0">
           <div className="space-y-6">
-            {/* Filter Categories */}
+            {/* Quick Content Filters */}
             <div>
-              <div className="flex items-center justify-between px-2.5 mb-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  Content Types
-                </span>
+              <div className="px-3 text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+                Filter Clips
               </div>
-              <nav className="space-y-1">
+              <div className="space-y-0.5">
                 {filterTabs.map((tab) => {
                   const Icon = tab.icon;
-                  const isActive = activeCategory === tab.id;
+                  const count =
+                    tab.id === 'all'
+                      ? clips.length
+                      : clips.filter((c) => c.content_type === tab.id).length;
+
                   return (
                     <button
                       key={tab.id}
                       onClick={() => setActiveCategory(tab.id)}
                       className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
-                        isActive
-                          ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold'
-                          : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200 border border-transparent'
+                        activeCategory === tab.id
+                          ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30'
+                          : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
                       }`}
                     >
                       <div className="flex items-center gap-2.5">
                         <Icon className="w-4 h-4" />
                         <span>{tab.label}</span>
                       </div>
+                      <span className="text-[10px] font-mono bg-slate-950 px-2 py-0.5 rounded-full border border-slate-800">
+                        {count}
+                      </span>
                     </button>
                   );
                 })}
-              </nav>
+              </div>
             </div>
 
-            {/* Custom Folders / Collections */}
+            {/* Custom Collections */}
             <div>
-              <div className="flex items-center justify-between px-2.5 mb-2">
-                <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                  Custom Collections
+              <div className="flex items-center justify-between px-3 mb-2">
+                <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+                  Collections
                 </span>
                 <button
                   onClick={() => setIsCategoryModalOpen(true)}
-                  className="p-1 hover:bg-slate-900 rounded-lg text-slate-400 hover:text-blue-400 transition"
-                  title="Create New Folder"
+                  className="text-slate-400 hover:text-blue-400 transition p-0.5"
+                  title="New Collection"
                 >
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <nav className="space-y-1 max-h-44 overflow-y-auto">
-                {categories.length === 0 ? (
-                  <p className="px-2.5 py-1 text-[11px] text-slate-600 italic">No collections yet</p>
-                ) : (
-                  categories.map((cat) => {
-                    const isCatActive = activeCategory === `cat_${cat.id}`;
-                    return (
-                      <button
-                        key={cat.id}
-                        onClick={() => setActiveCategory(`cat_${cat.id}`)}
-                        className={`w-full flex items-center gap-2.5 px-3 py-1.5 rounded-xl text-xs font-medium transition ${
-                          isCatActive
-                            ? 'bg-blue-600/15 text-blue-400 border border-blue-500/20 font-semibold'
-                            : 'text-slate-400 hover:bg-slate-900 hover:text-slate-200 border border-transparent'
-                        }`}
-                      >
-                        <span
-                          className="w-2.5 h-2.5 rounded-full shrink-0 shadow-sm"
-                          style={{ backgroundColor: cat.color || '#3b82f6' }}
-                        />
-                        <span className="truncate">{cat.name}</span>
-                      </button>
-                    );
-                  })
-                )}
-              </nav>
+              <div className="space-y-0.5">
+                {categories.map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setActiveCategory(`cat-${cat.id}`)}
+                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
+                      activeCategory === `cat-${cat.id}`
+                        ? 'bg-slate-800 text-slate-100 border border-slate-700'
+                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center gap-2.5 truncate">
+                      <span
+                        className="w-2.5 h-2.5 rounded-full shrink-0"
+                        style={{ backgroundColor: cat.color || '#3b82f6' }}
+                      />
+                      <span className="truncate">{cat.name}</span>
+                    </div>
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          {/* Privacy Protection Badge */}
-          <div className="p-3 bg-slate-900/80 rounded-2xl border border-slate-800 text-xs shadow-inner">
-            <div className="flex items-center gap-2 text-emerald-400 font-semibold mb-1">
-              <Shield className="w-4 h-4 shrink-0" />
-              Privacy Shield Active
+          {/* Privacy & System Status */}
+          <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
+            <div className="flex items-center gap-2 text-emerald-400 font-semibold text-[11px]">
+              <Shield className="w-3.5 h-3.5" />
+              <span>Local Privacy Shield Active</span>
             </div>
-            <p className="text-[11px] text-slate-400 leading-relaxed font-sans">
-              100% local database. Passwords, API keys, and sensitive entries are auto-blocked.
+            <p className="text-[10px] text-slate-500 leading-tight">
+              Password managers & sensitive keys automatically filtered locally.
             </p>
           </div>
         </aside>
 
-        {/* Center Presentation View */}
-        <main className="flex-1 p-6 overflow-y-auto bg-slate-950">
-          <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800/80">
-            <div>
-              <h2 className="text-base font-bold text-slate-100 capitalize flex items-center gap-2">
-                {activeCategory.startsWith('cat_')
-                  ? categories.find((c) => `cat_${c.id}` === activeCategory)?.name || 'Custom Collection'
-                  : activeCategory === 'all'
-                  ? 'All History'
-                  : `${activeCategory} Clips`}
-              </h2>
-              <p className="text-xs text-slate-500 font-sans">
-                {searchQuery ? `Search results for "${searchQuery}"` : 'Everything automatically captured from your PC'}
-              </p>
-            </div>
-            <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-800">
-              <Sparkles className="w-3.5 h-3.5 text-blue-400" />
-              <span>{clips.length} {clips.length === 1 ? 'item' : 'items'}</span>
-            </div>
-          </div>
-
-          {/* Render View Presentation */}
+        {/* Content Workspace Area */}
+        <main className="flex-1 p-6 overflow-y-auto bg-slate-950/60">
           {clips.length === 0 ? (
-            <div className="h-[400px] border-2 border-dashed border-slate-800/80 rounded-3xl flex flex-col items-center justify-center text-center p-8 bg-slate-900/20">
-              <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-4 shadow-xl">
-                <FileText className="w-7 h-7 text-blue-400/80" />
+            <div className="h-full flex flex-col items-center justify-center text-center p-8 border-2 border-dashed border-slate-800/80 rounded-2xl bg-slate-900/20">
+              <div className="w-14 h-14 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500 mb-4 shadow-inner">
+                <Sparkles className="w-6 h-6 text-blue-400" />
               </div>
-              <h3 className="text-sm font-semibold text-slate-200 mb-1">
-                {searchQuery ? 'No matching clips found' : 'No clipboard items yet'}
-              </h3>
-              <p className="text-xs text-slate-400 max-w-sm leading-relaxed mb-4">
-                {searchQuery
-                  ? 'Try searching for a different keyword or filter category.'
-                  : 'Copy text, code, colors, or take a screenshot (Win+Shift+S). They will instantly appear here!'}
+              <h3 className="text-sm font-semibold text-slate-200 mb-1">Your Clipboard Shelf is Empty</h3>
+              <p className="text-xs text-slate-400 max-w-sm">
+                Copy any text, code, web link, screenshot, or image to auto-save it to your local clipboard shelf.
               </p>
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-medium shadow-lg transition"
-                >
-                  Clear Search Filter
-                </button>
-              )}
             </div>
-          ) : viewMode === 'card' ? (
-            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-0">
-              {clips.map((clip) => (
-                <ClipCard key={clip.uuid} clip={clip} onPin={togglePin} onDelete={deleteClip} />
+          ) : viewMode === 'board' ? (
+            /* Kanban Board Mode */
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 h-full items-start">
+              {[
+                { id: 1, name: 'TEXT', color: '#3b82f6', type: 'text' },
+                { id: 2, name: 'CODE', color: '#06b6d4', type: 'code' },
+                { id: 3, name: 'LINKS', color: '#8b5cf6', type: 'link' },
+                { id: 4, name: 'IMAGES', color: '#ec4899', type: 'image' },
+              ].map((col) => (
+                <BoardColumn
+                  key={col.id}
+                  category={{ id: col.id, name: col.name, color: col.color }}
+                  clips={clips.filter((c) => c.content_type === col.type)}
+                  onPin={togglePin}
+                  onDelete={deleteClip}
+                  onDropClip={(clipId, categoryId) => assignClipToCategory(clipId, categoryId)}
+                />
               ))}
             </div>
           ) : viewMode === 'list' ? (
-            <div className="space-y-2.5">
+            /* Compact Row List View */
+            <div className="space-y-2.5 max-w-5xl mx-auto">
               {clips.map((clip) => (
-                <ClipRow key={clip.uuid} clip={clip} onPin={togglePin} onDelete={deleteClip} />
+                <ClipRow key={clip.id} clip={clip} onPin={togglePin} onDelete={deleteClip} />
               ))}
             </div>
           ) : (
-            /* Kanban Board View */
-            <div className="flex gap-4 overflow-x-auto pb-4 h-[calc(100vh-180px)]">
-              <BoardColumn
-                category={{ id: 0, name: 'Uncategorized', color: '#64748b' }}
-                clips={clips.filter((c) => !c.category_ids || c.category_ids.length === 0)}
-                onPin={togglePin}
-                onDelete={deleteClip}
-                onDropClip={assignClipToCategory}
-              />
-              {categories.map((cat) => (
-                <BoardColumn
-                  key={cat.id}
-                  category={cat}
-                  clips={clips.filter((c) => c.category_ids?.includes(cat.id))}
-                  onPin={togglePin}
-                  onDelete={deleteClip}
-                  onDropClip={assignClipToCategory}
-                />
+            /* Masonry Bento Grid View */
+            <div className="columns-1 md:columns-2 lg:columns-3 xl:columns-4 gap-4 space-y-0">
+              {clips.map((clip) => (
+                <ClipCard key={clip.id} clip={clip} onPin={togglePin} onDelete={deleteClip} />
               ))}
             </div>
           )}
@@ -392,60 +383,59 @@ export const DashboardWindow: React.FC = () => {
 
       {/* New Collection Modal */}
       {isCategoryModalOpen && (
-        <div
-          onClick={() => setIsCategoryModalOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-150"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-md shadow-2xl space-y-4">
+            <div className="flex items-center justify-between">
               <h3 className="text-sm font-bold text-slate-100">Create New Collection</h3>
-              <button onClick={() => setIsCategoryModalOpen(false)} className="text-slate-400 hover:text-slate-200">
+              <button
+                onClick={() => setIsCategoryModalOpen(false)}
+                className="text-slate-400 hover:text-slate-200 transition p-1"
+              >
                 <X className="w-4 h-4" />
               </button>
             </div>
+
             <form onSubmit={handleCreateCategory} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Collection Name</label>
+                <label className="block text-xs font-medium text-slate-400 mb-1">Collection Name</label>
                 <input
                   type="text"
+                  required
                   value={newCatName}
                   onChange={(e) => setNewCatName(e.target.value)}
-                  placeholder="e.g. Snippets & Ideas"
+                  placeholder="e.g. Work Snippets, Colors, React Links"
                   className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-100 focus:outline-none focus:border-blue-500"
-                  autoFocus
-                  required
                 />
               </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1.5">Badge Color</label>
-                <div className="flex items-center gap-2.5">
-                  {['#3b82f6', '#10b981', '#f59e0b', '#ec4899', '#8b5cf6', '#06b6d4'].map((color) => (
+                <label className="block text-xs font-medium text-slate-400 mb-1">Badge Color</label>
+                <div className="flex items-center gap-2">
+                  {['#3b82f6', '#8b5cf6', '#ec4899', '#10b981', '#f59e0b', '#06b6d4'].map((color) => (
                     <button
                       key={color}
                       type="button"
                       onClick={() => setNewCatColor(color)}
-                      className={`w-7 h-7 rounded-full border-2 transition-all ${
-                        newCatColor === color ? 'border-white scale-110 shadow-lg' : 'border-transparent opacity-70'
+                      className={`w-6 h-6 rounded-full border-2 transition ${
+                        newCatColor === color ? 'border-white scale-110' : 'border-transparent'
                       }`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
                 </div>
               </div>
-              <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-800">
+
+              <div className="flex justify-end gap-2 pt-2">
                 <button
                   type="button"
                   onClick={() => setIsCategoryModalOpen(false)}
-                  className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800"
+                  className="px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-400 hover:bg-slate-800 transition"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-blue-600 hover:bg-blue-500 text-white shadow-lg"
+                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-lg shadow-blue-600/20 transition"
                 >
                   Create Collection
                 </button>
@@ -455,41 +445,234 @@ export const DashboardWindow: React.FC = () => {
         </div>
       )}
 
-      {/* Confirm Clear History Modal (Error Prevention UX Law) */}
+      {/* Clear History Confirmation Modal (Preserving Pinned Items) */}
       {isClearModalOpen && (
-        <div
-          onClick={() => setIsClearModalOpen(false)}
-          className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-150"
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="bg-slate-900 border border-slate-700/80 rounded-2xl w-full max-w-sm p-5 shadow-2xl space-y-4"
-          >
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 rounded-xl bg-rose-950/80 border border-rose-800/60 text-rose-400">
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm shadow-2xl space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="p-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-rose-400 shrink-0">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-slate-100">Clear Clipboard History?</h3>
-                <p className="text-xs text-slate-400 font-sans">This will delete all stored clips. This action cannot be undone.</p>
+                <h3 className="text-sm font-bold text-slate-100">Clear Clipboard History</h3>
+                <p className="text-xs text-slate-400 mt-1 leading-relaxed">
+                  Are you sure you want to clear {unpinnedCount} unpinned item{unpinnedCount === 1 ? '' : 's'}?{' '}
+                  <strong className="text-amber-400 font-semibold">Your pinned clips will be preserved safely.</strong>
+                </p>
               </div>
             </div>
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-slate-800">
+
+            <div className="flex justify-end gap-2 pt-2 border-t border-slate-800/80">
               <button
                 type="button"
                 onClick={() => setIsClearModalOpen(false)}
-                className="px-3.5 py-1.5 rounded-xl text-xs font-medium text-slate-400 hover:bg-slate-800"
+                className="px-3.5 py-1.5 rounded-xl border border-slate-800 text-xs text-slate-400 hover:bg-slate-800 transition"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={handleConfirmClearAll}
-                className="px-4 py-1.5 rounded-xl text-xs font-semibold bg-rose-600 hover:bg-rose-500 text-white shadow-lg"
+                className="px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-xs font-semibold text-white shadow-lg shadow-rose-600/20 transition"
               >
-                Yes, Clear All
+                Clear Unpinned History
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Application Settings Modal */}
+      {isSettingsOpen && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl h-[480px] shadow-2xl flex overflow-hidden">
+            {/* Settings Sidebar */}
+            <aside className="w-48 border-r border-slate-800 bg-slate-950/50 p-3 space-y-1 shrink-0 flex flex-col justify-between">
+              <div className="space-y-1">
+                <div className="px-3 py-2 font-bold text-[11px] text-slate-400 uppercase tracking-wider mb-1">
+                  Settings
+                </div>
+                <button
+                  onClick={() => setSettingsTab('general')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    settingsTab === 'general'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                  }`}
+                >
+                  <Sliders className="w-4 h-4" />
+                  General
+                </button>
+                <button
+                  onClick={() => setSettingsTab('privacy')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    settingsTab === 'privacy'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                  }`}
+                >
+                  <Shield className="w-4 h-4" />
+                  Privacy
+                </button>
+                <button
+                  onClick={() => setSettingsTab('shortcuts')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    settingsTab === 'shortcuts'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                  }`}
+                >
+                  <Keyboard className="w-4 h-4" />
+                  Shortcuts
+                </button>
+                <button
+                  onClick={() => setSettingsTab('about')}
+                  className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-medium transition ${
+                    settingsTab === 'about'
+                      ? 'bg-blue-600/15 text-blue-400 border border-blue-500/30 font-semibold'
+                      : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                  }`}
+                >
+                  <Info className="w-4 h-4" />
+                  About
+                </button>
+              </div>
+
+              <div className="px-2 pt-2 border-t border-slate-800 text-[10px] text-slate-500 text-center font-mono">
+                ClipShelf v0.1.0
+              </div>
+            </aside>
+
+            {/* Settings Main View */}
+            <main className="flex-1 p-6 overflow-y-auto relative flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
+                  <h2 className="text-sm font-bold text-slate-100 capitalize">
+                    {settingsTab} Settings
+                  </h2>
+                  <button
+                    onClick={() => setIsSettingsOpen(false)}
+                    className="text-slate-400 hover:text-slate-200 transition p-1"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {settingsTab === 'general' && (
+                  <div className="space-y-4">
+                    <label className="flex items-center justify-between p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-200">Start on Windows Login</div>
+                        <div className="text-[11px] text-slate-400">Launch ClipShelf automatically when logging in</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={startOnLogin}
+                        onChange={(e) => setStartOnLogin(e.target.checked)}
+                        className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                      />
+                    </label>
+
+                    <div className="p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 space-y-2">
+                      <div className="text-xs font-semibold text-slate-200">Theme Accent</div>
+                      <div className="flex items-center gap-2">
+                        {[
+                          { id: 'blue', color: '#3b82f6', label: 'Neon Blue' },
+                          { id: 'cyan', color: '#06b6d4', label: 'Cyber Cyan' },
+                          { id: 'purple', color: '#8b5cf6', label: 'Radiant Purple' },
+                          { id: 'emerald', color: '#10b981', label: 'Emerald' },
+                        ].map((acc) => (
+                          <button
+                            key={acc.id}
+                            onClick={() => setAccentColor(acc.id as any)}
+                            className={`flex items-center gap-1.5 px-2.5 py-1 rounded-lg border text-xs transition ${
+                              accentColor === acc.id
+                                ? 'border-blue-500 bg-blue-500/10 text-white'
+                                : 'border-slate-800 text-slate-400 hover:border-slate-700'
+                            }`}
+                          >
+                            <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: acc.color }} />
+                            <span>{acc.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {settingsTab === 'privacy' && (
+                  <div className="space-y-4">
+                    <div className="p-3.5 bg-emerald-950/20 border border-emerald-800/40 rounded-xl text-xs text-emerald-300 leading-relaxed flex items-start gap-2.5">
+                      <Shield className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                      <div>
+                        <strong className="block font-semibold">100% Offline Local Storage</strong>
+                        No clipboard text, code, or images leave your device. All data is kept securely in your local SQLite database.
+                      </div>
+                    </div>
+
+                    <label className="flex items-center justify-between p-3.5 bg-slate-950/60 rounded-xl border border-slate-800 cursor-pointer hover:border-slate-700 transition">
+                      <div>
+                        <div className="text-xs font-semibold text-slate-200">Sensitive Process Filter</div>
+                        <div className="text-[11px] text-slate-400">Ignore copies originating from password managers (*Bitwarden, 1Password, KeePass*)</div>
+                      </div>
+                      <input
+                        type="checkbox"
+                        checked={privacyFilterEnabled}
+                        onChange={(e) => setPrivacyFilterEnabled(e.target.checked)}
+                        className="w-4 h-4 accent-blue-600 rounded cursor-pointer"
+                      />
+                    </label>
+                  </div>
+                )}
+
+                {settingsTab === 'shortcuts' && (
+                  <div className="space-y-2.5 text-xs">
+                    <div className="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                      <span className="text-slate-300 font-medium">Global Quick Paste Window</span>
+                      <kbd className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono text-[11px]">
+                        Ctrl + Shift + V
+                      </kbd>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                      <span className="text-slate-300 font-medium">Focus Search Bar</span>
+                      <kbd className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono text-[11px]">
+                        / or Ctrl + F
+                      </kbd>
+                    </div>
+                    <div className="flex items-center justify-between p-3 bg-slate-950/60 rounded-xl border border-slate-800">
+                      <span className="text-slate-300 font-medium">Dismiss Search / Close Modals</span>
+                      <kbd className="bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-200 font-mono text-[11px]">
+                        Esc
+                      </kbd>
+                    </div>
+                  </div>
+                )}
+
+                {settingsTab === 'about' && (
+                  <div className="space-y-3 text-xs text-slate-400">
+                    <div className="flex items-center gap-3">
+                      <img src={logoImg} alt="Logo" className="w-10 h-10 rounded-xl border border-slate-800 shadow-md" />
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-100">ClipShelf Desktop</h3>
+                        <p className="text-[11px] text-slate-400">Version 0.1.0 (Production Build)</p>
+                      </div>
+                    </div>
+                    <p className="leading-relaxed bg-slate-950/60 p-3 rounded-xl border border-slate-800 text-[11px]">
+                      Open-source visual clipboard history manager built with Tauri v2, Rust, React 19, TypeScript, and SQLite FTS5.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex justify-end pt-3 border-t border-slate-800">
+                <button
+                  onClick={() => setIsSettingsOpen(false)}
+                  className="px-4 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-500 text-xs font-semibold text-white shadow-md transition"
+                >
+                  Done
+                </button>
+              </div>
+            </main>
           </div>
         </div>
       )}

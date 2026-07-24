@@ -147,7 +147,7 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
           </div>
         </div>
 
-        {/* Bento Content - Height Adapts Strictly to Content Type */}
+        {/* Bento Content */}
         <div className="my-1.5">
           {/* COLOR TYPE */}
           {clip.content_type === 'color' && clip.text_content ? (
@@ -214,10 +214,14 @@ export const ClipCard: React.FC<ClipCardProps> = ({ clip, onPin, onDelete }) => 
                 <p className="text-[10px] text-slate-500">Copy new screenshot to preview</p>
               </div>
             </div>
-          ) : /* STANDARD TEXT OR FILE */
-          (
-            <div className="text-xs font-mono text-slate-200 leading-relaxed whitespace-pre-wrap break-all line-clamp-4">
+          ) : /* STANDARD TEXT OR FILE TYPE */
+          textVal.trim() !== '' ? (
+            <div className="p-2.5 bg-slate-950/40 rounded-xl border border-slate-800/60 font-sans text-xs text-slate-200 leading-relaxed whitespace-pre-wrap break-all line-clamp-4">
               {textVal}
+            </div>
+          ) : (
+            <div className="p-2 bg-slate-950/30 rounded-lg border border-slate-800/40 text-[11px] font-mono text-slate-500 italic">
+              Empty text item
             </div>
           )}
         </div>

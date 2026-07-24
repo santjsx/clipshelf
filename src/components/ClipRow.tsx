@@ -151,8 +151,10 @@ export const ClipRow: React.FC<ClipRowProps> = ({ clip, onPin, onDelete }) => {
                     {clip.ocr_text || 'Visual Image Content (Click to expand)'}
                   </span>
                 </div>
+              ) : (clip.text_content && clip.text_content.trim() !== '') ? (
+                clip.text_content
               ) : (
-                clip.text_content || clip.asset_path
+                <span className="text-slate-500 italic">Empty text item</span>
               )}
             </div>
           </div>

@@ -300,7 +300,7 @@ pub fn remove_clip_category(conn: &Connection, clip_id: i64, category_id: i64) -
 }
 
 pub fn clear_all_clips(conn: &Connection) -> Result<()> {
-    conn.execute("DELETE FROM clips", [])?;
+    conn.execute("DELETE FROM clips WHERE is_pinned = 0", [])?;
     Ok(())
 }
 
