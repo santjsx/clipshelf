@@ -13,6 +13,11 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     try {
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('view') === 'landing') {
+        setCurrentView('landing');
+      }
+
       const appWindow = getCurrentWindow();
       if (appWindow && appWindow.label) {
         setWindowLabel(appWindow.label);
