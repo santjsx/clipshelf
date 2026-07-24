@@ -46,6 +46,7 @@ export const DashboardWindow: React.FC = () => {
     deleteClip,
     clearAllClips,
     addCategory,
+    deleteCategory,
     assignClipToCategory,
   } = useClips();
 
@@ -65,15 +66,13 @@ export const DashboardWindow: React.FC = () => {
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Global Keyboard Shortcuts (Jakob's Law & Efficiency)
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Focus Search Bar on '/' or 'Ctrl+F'
       if ((e.key === '/' || (e.ctrlKey && e.key === 'f')) && document.activeElement !== searchInputRef.current) {
         e.preventDefault();
         searchInputRef.current?.focus();
       }
-      // Clear Search or close modals on 'Escape'
       if (e.key === 'Escape') {
         if (isCategoryModalOpen) setIsCategoryModalOpen(false);
         else if (isClearModalOpen) setIsClearModalOpen(false);
@@ -95,6 +94,12 @@ export const DashboardWindow: React.FC = () => {
       setNewCatName('');
       setIsCategoryModalOpen(false);
     }
+  };
+
+  const handleDeleteCategory = (e: React.MouseEvent, catId: number) => {
+    e.stopPropagation();
+    deleteCategory(catId);
+    showToast('Collection deleted', 'info');
   };
 
   const handlePickColor = async () => {
@@ -138,7 +143,7 @@ export const DashboardWindow: React.FC = () => {
           <img
             src={logoImg}
             alt="ClipShelf Logo"
-            className="w-8 h-8 rounded-xl shadow-lg shadow-blue-500/20 border border-blue-400/30 object-cover"
+            className="w-8 h-8 rounded-xl object-contain drop-shadow-md"
           />
           <div>
             <h1 className="font-bold text-sm tracking-wide text-slate-100 flex items-center gap-2">
@@ -150,7 +155,7 @@ export const DashboardWindow: React.FC = () => {
           </div>
         </div>
 
-        {/* Global Search Bar (Fitts's & Hick's Law) */}
+        {/* Global Search Bar */}
         <div className="flex-1 max-w-lg mx-6 relative">
           <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -177,7 +182,7 @@ export const DashboardWindow: React.FC = () => {
           )}
         </div>
 
-        {/* Color Sampler, Settings, Clear All & View Mode Controls */}
+        {/* Header Action Controls */}
         <div className="flex items-center gap-2.5">
           <button
             onClick={handlePickColor}
@@ -241,9 +246,9 @@ export const DashboardWindow: React.FC = () => {
         </div>
       </header>
 
-      {/* Main App Layout */}
+      {/* Main Layout */}
       <div className="flex-1 flex overflow-hidden">
-        {/* Left Navigation Sidebar */}
+        {/* Navigation Sidebar */}
         <aside className="w-56 border-r border-slate-800/80 bg-slate-900/40 p-3 flex flex-col justify-between shrink-0">
           <div className="space-y-6">
             {/* Quick Content Filters */}
@@ -296,31 +301,39 @@ export const DashboardWindow: React.FC = () => {
                   <Plus className="w-3.5 h-3.5" />
                 </button>
               </div>
-              <div className="space-y-0.5">
+              <div className="space-y-1">
                 {categories.map((cat) => (
-                  <button
-                    key={cat.id}
-                    onClick={() => setActiveCategory(`cat-${cat.id}`)}
-                    className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
-                      activeCategory === `cat-${cat.id}`
-                        ? 'bg-slate-800 text-slate-100 border border-slate-700'
-                        : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2.5 truncate">
-                      <span
-                        className="w-2.5 h-2.5 rounded-full shrink-0"
-                        style={{ backgroundColor: cat.color || '#3b82f6' }}
-                      />
-                      <span className="truncate">{cat.name}</span>
-                    </div>
-                  </button>
+                  <div key={cat.id} className="group/cat flex items-center justify-between w-full">
+                    <button
+                      onClick={() => setActiveCategory(`cat-${cat.id}`)}
+                      className={`flex-1 flex items-center justify-between px-3 py-2 rounded-xl text-xs font-medium transition ${
+                        activeCategory === `cat-${cat.id}`
+                          ? 'bg-slate-800 text-slate-100 border border-slate-700'
+                          : 'text-slate-400 hover:bg-slate-800/50 hover:text-slate-200'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 truncate">
+                        <span
+                          className="w-2.5 h-2.5 rounded-full shrink-0"
+                          style={{ backgroundColor: cat.color || '#3b82f6' }}
+                        />
+                        <span className="truncate">{cat.name}</span>
+                      </div>
+                    </button>
+                    <button
+                      onClick={(e) => handleDeleteCategory(e, cat.id)}
+                      className="opacity-0 group-hover/cat:opacity-100 p-1.5 text-slate-500 hover:text-rose-400 transition ml-1 rounded-lg hover:bg-slate-800"
+                      title="Delete collection"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* Privacy & System Status */}
+          {/* Privacy Shield Info */}
           <div className="p-3 bg-slate-950/80 rounded-xl border border-slate-800 space-y-1.5">
             <div className="flex items-center gap-2 text-emerald-400 font-semibold text-[11px]">
               <Shield className="w-3.5 h-3.5" />
@@ -445,7 +458,7 @@ export const DashboardWindow: React.FC = () => {
         </div>
       )}
 
-      {/* Clear History Confirmation Modal (Preserving Pinned Items) */}
+      {/* Clear History Confirmation Modal */}
       {isClearModalOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-sm shadow-2xl space-y-4">
@@ -482,7 +495,7 @@ export const DashboardWindow: React.FC = () => {
         </div>
       )}
 
-      {/* Application Settings Modal */}
+      {/* Settings Modal */}
       {isSettingsOpen && (
         <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl h-[480px] shadow-2xl flex overflow-hidden">
@@ -651,7 +664,7 @@ export const DashboardWindow: React.FC = () => {
                 {settingsTab === 'about' && (
                   <div className="space-y-3 text-xs text-slate-400">
                     <div className="flex items-center gap-3">
-                      <img src={logoImg} alt="Logo" className="w-10 h-10 rounded-xl border border-slate-800 shadow-md" />
+                      <img src={logoImg} alt="Logo" className="w-10 h-10 rounded-xl object-contain drop-shadow" />
                       <div>
                         <h3 className="text-sm font-bold text-slate-100">ClipShelf Desktop</h3>
                         <p className="text-[11px] text-slate-400">Version 0.1.0 (Production Build)</p>

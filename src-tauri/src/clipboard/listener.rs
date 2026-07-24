@@ -196,82 +196,8 @@ fn read_clipboard_payload() -> Option<(String, Option<String>, Option<String>)> 
 
         let mut result = None;
 
-        // Custom PNG format registered by Chrome / Snipping Tool / Edge / Firefox
-        let png_name = "PNG\0".encode_utf16().collect::<Vec<u16>>();
-        let cf_png = RegisterClipboardFormatW(png_name.as_ptr());
-        let img_png_name = "image/png\0".encode_utf16().collect::<Vec<u16>>();
-        let cf_image_png = RegisterClipboardFormatW(img_png_name.as_ptr());
-
-        // 1. Check PNG / image/png formats (Chrome, Edge, Firefox, Snipping Tool)
-        let h_png = if cf_png != 0 && IsClipboardFormatAvailable(cf_png) != 0 {
-            GetClipboardData(cf_png)
-        } else if cf_image_png != 0 && IsClipboardFormatAvailable(cf_image_png) != 0 {
-            GetClipboardData(cf_image_png)
-        } else {
-            std::ptr::null_mut()
-        };
-
-        if !h_png.is_null() {
-            if let Some((data_url, asset_path)) = save_raw_png_to_asset_file(h_png) {
-                result = Some(("image".to_string(), Some(data_url), Some(asset_path)));
-            }
-        }
-        // 2. Check CF_DIB / Images (Screenshots & System Bitmaps)
-        else if IsClipboardFormatAvailable(CF_DIB) != 0 {
-            let h_dib = GetClipboardData(CF_DIB);
-            if !h_dib.is_null() {
-                if let Some((data_url, asset_path)) = save_dib_to_asset_file(h_dib) {
-                    result = Some(("image".to_string(), Some(data_url), Some(asset_path)));
-                }
-            }
-        }
-        // 3. Check CF_HDROP (Files & Image Files)
-        else if IsClipboardFormatAvailable(CF_HDROP) != 0 {
-            let h_drop = GetClipboardData(CF_HDROP);
-            if !h_drop.is_null() {
-                let count = DragQueryFileW(h_drop as _, 0xFFFFFFFF, std::ptr::null_mut(), 0);
-                if count > 0 {
-                    let mut files = Vec::new();
-                    for i in 0..count {
-                        let len = DragQueryFileW(h_drop as _, i, std::ptr::null_mut(), 0);
-                        let mut buf = vec![0u16; (len + 1) as usize];
-                        DragQueryFileW(h_drop as _, i, buf.as_mut_ptr(), buf.len() as u32);
-                        let file_path = OsString::from_wide(&buf[..len as usize]).to_string_lossy().to_string();
-                        files.push(file_path);
-                    }
-                    let joined_files = files.join("\n");
-
-                    // Check if dropped single file is an image
-                    if files.len() == 1 {
-                        let lower = files[0].to_lowercase();
-                        if lower.ends_with(".png")
-                            || lower.ends_with(".jpg")
-                            || lower.ends_with(".jpeg")
-                            || lower.ends_with(".webp")
-                            || lower.ends_with(".gif")
-                        {
-                            if let Ok(bytes) = std::fs::read(&files[0]) {
-                                let mime = if lower.ends_with(".png") {
-                                    "png"
-                                } else if lower.ends_with(".webp") {
-                                    "webp"
-                                } else {
-                                    "jpeg"
-                                };
-                                let data_url = format!("data:image/{};base64,{}", mime, BASE64.encode(&bytes));
-                                result = Some(("image".to_string(), Some(data_url), Some(files[0].clone())));
-                            }
-                        }
-                    }
-
-                    if result.is_none() {
-                        result = Some(("file".to_string(), Some(joined_files), None));
-                    }
-                }
-            }
-        }
-        // 4. Check CF_UNICODETEXT (Text / Links / Code / Color)
-        else if IsClipboardFormatAvailable(CF_UNICODETEXT) != 0 {
+        // 1. Check CF_UNICODETEXT first if present and non-empty (Text / Links / Code / Color)
+        if IsClipboardFormatAvailable(CF_UNICODETEXT) != 0 {
             let h_data = GetClipboardData(CF_UNICODETEXT);
             if !h_data.is_null() {
                 let ptr = GlobalLock(h_data) as *const u16;
@@ -284,8 +210,81 @@ fn read_clipboard_payload() -> Option<(String, Option<String>, Option<String>)> 
                     let text = String::from_utf16_lossy(slice);
                     GlobalUnlock(h_data);
 
-                    let content_type = classify_text_content(&text);
-                    result = Some((content_type, Some(text), None));
+                    if !text.trim().is_empty() {
+                        let content_type = classify_text_content(&text);
+                        result = Some((content_type, Some(text), None));
+                    }
+                }
+            }
+        }
+
+        // 2. If no text payload, check PNG / image/png / CF_DIB / CF_HDROP formats
+        if result.is_none() {
+            let png_name = "PNG\0".encode_utf16().collect::<Vec<u16>>();
+            let cf_png = RegisterClipboardFormatW(png_name.as_ptr());
+            let img_png_name = "image/png\0".encode_utf16().collect::<Vec<u16>>();
+            let cf_image_png = RegisterClipboardFormatW(img_png_name.as_ptr());
+
+            let h_png = if cf_png != 0 && IsClipboardFormatAvailable(cf_png) != 0 {
+                GetClipboardData(cf_png)
+            } else if cf_image_png != 0 && IsClipboardFormatAvailable(cf_image_png) != 0 {
+                GetClipboardData(cf_image_png)
+            } else {
+                std::ptr::null_mut()
+            };
+
+            if !h_png.is_null() {
+                if let Some((data_url, asset_path)) = save_raw_png_to_asset_file(h_png) {
+                    result = Some(("image".to_string(), Some(data_url), Some(asset_path)));
+                }
+            } else if IsClipboardFormatAvailable(CF_DIB) != 0 {
+                let h_dib = GetClipboardData(CF_DIB);
+                if !h_dib.is_null() {
+                    if let Some((data_url, asset_path)) = save_dib_to_asset_file(h_dib) {
+                        result = Some(("image".to_string(), Some(data_url), Some(asset_path)));
+                    }
+                }
+            } else if IsClipboardFormatAvailable(CF_HDROP) != 0 {
+                let h_drop = GetClipboardData(CF_HDROP);
+                if !h_drop.is_null() {
+                    let count = DragQueryFileW(h_drop as _, 0xFFFFFFFF, std::ptr::null_mut(), 0);
+                    if count > 0 {
+                        let mut files = Vec::new();
+                        for i in 0..count {
+                            let len = DragQueryFileW(h_drop as _, i, std::ptr::null_mut(), 0);
+                            let mut buf = vec![0u16; (len + 1) as usize];
+                            DragQueryFileW(h_drop as _, i, buf.as_mut_ptr(), buf.len() as u32);
+                            let file_path = OsString::from_wide(&buf[..len as usize]).to_string_lossy().to_string();
+                            files.push(file_path);
+                        }
+                        let joined_files = files.join("\n");
+
+                        if files.len() == 1 {
+                            let lower = files[0].to_lowercase();
+                            if lower.ends_with(".png")
+                                || lower.ends_with(".jpg")
+                                || lower.ends_with(".jpeg")
+                                || lower.ends_with(".webp")
+                                || lower.ends_with(".gif")
+                            {
+                                if let Ok(bytes) = std::fs::read(&files[0]) {
+                                    let mime = if lower.ends_with(".png") {
+                                        "png"
+                                    } else if lower.ends_with(".webp") {
+                                        "webp"
+                                    } else {
+                                        "jpeg"
+                                    };
+                                    let data_url = format!("data:image/{};base64,{}", mime, BASE64.encode(&bytes));
+                                    result = Some(("image".to_string(), Some(data_url), Some(files[0].clone())));
+                                }
+                            }
+                        }
+
+                        if result.is_none() {
+                            result = Some(("file".to_string(), Some(joined_files), None));
+                        }
+                    }
                 }
             }
         }

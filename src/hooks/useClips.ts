@@ -123,6 +123,18 @@ export const useClips = () => {
     }
   };
 
+  const deleteCategory = async (id: number) => {
+    try {
+      await invoke('delete_category', { id });
+      setCategories((prev) => prev.filter((c) => c.id !== id));
+      if (activeCategory === `cat-${id}`) {
+        setActiveCategory('all');
+      }
+    } catch (e) {
+      console.log('Delete category error:', e);
+    }
+  };
+
   const assignClipToCategory = async (clipId: number, categoryId: number) => {
     try {
       await invoke('assign_category', { clipId, categoryId });
@@ -157,6 +169,7 @@ export const useClips = () => {
     deleteClip,
     clearAllClips,
     addCategory,
+    deleteCategory,
     assignClipToCategory,
     refresh: fetchClips,
   };

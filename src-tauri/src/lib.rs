@@ -115,6 +115,14 @@ fn assign_category(clip_id: i64, category_id: i64) -> Result<(), String> {
 }
 
 #[tauri::command]
+fn delete_category(id: i64) -> Result<(), String> {
+    let db_path = db::get_db_path();
+    let conn = Connection::open(&db_path).map_err(|e| e.to_string())?;
+
+    db::clips::delete_category(&conn, id).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
 fn clear_all_clips() -> Result<(), String> {
     let db_path = db::get_db_path();
     let conn = Connection::open(&db_path).map_err(|e| e.to_string())?;
@@ -155,6 +163,7 @@ pub fn run() {
             run_ocr_for_clip,
             get_categories,
             create_category,
+            delete_category,
             assign_category
         ])
         .run(tauri::generate_context!())

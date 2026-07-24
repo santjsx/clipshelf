@@ -286,8 +286,14 @@ pub fn get_categories(conn: &Connection) -> Result<Vec<Category>> {
 pub fn assign_clip_category(conn: &Connection, clip_id: i64, category_id: i64) -> Result<()> {
     conn.execute(
         "INSERT OR IGNORE INTO clip_categories (clip_id, category_id) VALUES (?1, ?2)",
-        params![clip_id, category_id],
+        [clip_id, category_id],
     )?;
+    Ok(())
+}
+
+pub fn delete_category(conn: &Connection, id: i64) -> Result<()> {
+    conn.execute("DELETE FROM clip_categories WHERE category_id = ?1", [id])?;
+    conn.execute("DELETE FROM categories WHERE id = ?1", [id])?;
     Ok(())
 }
 
