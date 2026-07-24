@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Shield,
-  Zap,
   Code,
   Download,
   ExternalLink,
@@ -9,7 +7,6 @@ import {
   Lock,
   Layers,
   Sparkles,
-  Maximize2,
   Palette,
   ArrowRight,
   Monitor,
@@ -21,19 +18,24 @@ interface LandingPageProps {
 }
 
 export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => {
+  const [scrollProgress, setScrollProgress] = useState(0);
   const [scrollY, setScrollY] = useState(0);
-  const [activeStep, setActiveStep] = useState(0);
+  const [activeChapter, setActiveChapter] = useState(0);
 
   useEffect(() => {
     const handleScroll = () => {
       const currentScroll = window.scrollY;
-      setScrollY(currentScroll);
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      const progress = totalHeight > 0 ? (currentScroll / totalHeight) * 100 : 0;
 
-      // Scroll step calculation for sticky feature showcase
-      if (currentScroll < 600) setActiveStep(0);
-      else if (currentScroll < 1200) setActiveStep(1);
-      else if (currentScroll < 1800) setActiveStep(2);
-      else setActiveStep(3);
+      setScrollY(currentScroll);
+      setScrollProgress(progress);
+
+      // Chapter Scroll Thresholds
+      if (currentScroll < 700) setActiveChapter(0);
+      else if (currentScroll < 1400) setActiveChapter(1);
+      else if (currentScroll < 2100) setActiveChapter(2);
+      else setActiveChapter(3);
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
@@ -44,44 +46,50 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
   const downloadMsiUrl = 'https://github.com/santjsx/clipshelf/releases/download/v0.1.0/ClipShelf-0.1.0-Setup.msi';
 
   return (
-    <div className="min-h-screen bg-[#07090e] text-slate-100 font-sans selection:bg-blue-500/30 overflow-x-hidden">
-      {/* Dynamic Background Mesh Gradients */}
-      <div className="fixed inset-0 pointer-events-none z-0">
+    <div className="min-h-screen bg-[#07080c] text-slate-100 font-sans selection:bg-amber-500/20 overflow-x-hidden relative">
+      {/* Top Scroll Narrative Progress Bar */}
+      <div
+        className="fixed top-0 left-0 h-[2.5px] bg-gradient-to-r from-amber-400 via-sky-400 to-amber-300 z-50 transition-all duration-150 ease-out"
+        style={{ width: `${scrollProgress}%` }}
+      />
+
+      {/* Rare Ambient Lighting - Obsidian & Champagne Amber Glow */}
+      <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         <div
-          className="absolute -top-[20%] left-1/2 -translate-x-1/2 w-[1000px] h-[600px] bg-gradient-to-b from-blue-600/15 via-cyan-500/10 to-transparent blur-[140px] rounded-full transition-transform duration-700 ease-out"
-          style={{ transform: `translate(-50%, ${scrollY * 0.15}px)` }}
+          className="absolute -top-[15%] left-1/2 -translate-x-1/2 w-[1100px] h-[650px] bg-[radial-gradient(ellipse_at_center,rgba(212,175,55,0.08)_0%,rgba(56,189,248,0.05)_40%,transparent_75%)] blur-[120px] transition-transform duration-700 ease-out"
+          style={{ transform: `translate(-50%, ${scrollY * 0.12}px)` }}
         />
         <div
-          className="absolute top-[40%] -left-[10%] w-[600px] h-[600px] bg-purple-600/10 blur-[160px] rounded-full"
-          style={{ transform: `translateY(${scrollY * 0.08}px)` }}
+          className="absolute top-[35%] -right-[15%] w-[700px] h-[700px] bg-[radial-gradient(circle,rgba(226,184,87,0.06)_0%,transparent_70%)] blur-[140px]"
+          style={{ transform: `translateY(${scrollY * 0.05}px)` }}
         />
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b15_1px,transparent_1px),linear-gradient(to_bottom,#1e293b15_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
+        <div className="absolute inset-0 bg-[linear-gradient(to_right,#ffffff05_1px,transparent_1px),linear-gradient(to_bottom,#ffffff05_1px,transparent_1px)] bg-[size:5rem_5rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_10%,#000_70%,transparent_100%)]" />
       </div>
 
-      {/* Sticky Header Navigation */}
-      <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#07090e]/80 border-b border-slate-800/80 px-6 py-3.5 transition-all">
+      {/* Navigation Bar */}
+      <header className="sticky top-0 z-40 backdrop-blur-2xl bg-[#07080c]/80 border-b border-white/[0.07] px-6 py-4 transition-all">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3 cursor-pointer" onClick={onOpenDashboard}>
-            <img src={logoImg} alt="ClipShelf Logo" className="w-8 h-8 object-contain drop-shadow-md" />
-            <span className="font-mono font-bold text-base tracking-wider bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">
-              CLIPSHELF
-            </span>
-            <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-blue-500/10 text-blue-400 border border-blue-500/20">
-              v0.1.0
-            </span>
+          <div className="flex items-center gap-3 cursor-pointer group" onClick={onOpenDashboard}>
+            <img src={logoImg} alt="ClipShelf Logo" className="w-8 h-8 object-contain transition-transform group-hover:scale-105" />
+            <div className="flex items-center gap-2">
+              <span className="font-mono font-bold text-sm tracking-[0.2em] text-slate-100">CLIPSHELF</span>
+              <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                v0.1.0
+              </span>
+            </div>
           </div>
 
           <div className="flex items-center gap-3">
             <button
               onClick={onOpenDashboard}
-              className="px-4 py-2 text-xs font-semibold rounded-xl bg-slate-800/80 hover:bg-slate-700 text-slate-200 border border-slate-700/80 transition flex items-center gap-2"
+              className="px-4 py-2 text-xs font-medium rounded-xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 border border-white/10 transition flex items-center gap-2"
             >
-              <Monitor className="w-3.5 h-3.5 text-blue-400" />
+              <Monitor className="w-3.5 h-3.5 text-amber-400" />
               Open Dashboard
             </button>
             <a
               href={downloadExeUrl}
-              className="px-4 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-blue-600 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white shadow-lg shadow-blue-500/20 transition flex items-center gap-2"
+              className="px-4.5 py-2 text-xs font-bold rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 shadow-lg shadow-amber-500/10 transition-all flex items-center gap-2"
             >
               <Download className="w-3.5 h-3.5" />
               Download .EXE
@@ -91,242 +99,238 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
       </header>
 
       {/* HERO SECTION */}
-      <section className="relative z-10 min-h-[90vh] flex flex-col items-center justify-center text-center px-6 pt-16 pb-24">
-        {/* Floating Tag */}
-        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-blue-500/10 border border-blue-500/20 text-blue-400 text-xs font-mono font-medium mb-8 animate-pulse">
-          <Sparkles className="w-3.5 h-3.5" />
-          <span>Local-First Knowledge Vault for Windows 10 / 11</span>
+      <section className="relative z-10 min-h-[92vh] flex flex-col items-center justify-center text-center px-6 pt-12 pb-20">
+        {/* Rare Accent Tag */}
+        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-300 text-xs font-mono tracking-wider mb-8 shadow-inner">
+          <Sparkles className="w-3.5 h-3.5 text-amber-400" />
+          <span>OFFLINE LOCAL KNOWLEDGE VAULT FOR WINDOWS</span>
         </div>
 
-        {/* Hero Title */}
-        <h1 className="max-w-4xl text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.15] mb-6">
-          Your Clipboard, Elevated into a{' '}
-          <span className="bg-gradient-to-r from-blue-400 via-cyan-300 to-indigo-400 bg-clip-text text-transparent">
-            Visual Knowledge Vault.
+        {/* Hero Headline */}
+        <h1 className="max-w-4xl text-4xl sm:text-6xl font-extrabold tracking-tight leading-[1.12] mb-6 text-slate-100">
+          Transform Fragmented Copies into a{' '}
+          <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-sky-300 bg-clip-text text-transparent">
+            Visual Intelligence Engine.
           </span>
         </h1>
 
         {/* Subtitle */}
         <p className="max-w-2xl text-slate-400 text-base sm:text-lg leading-relaxed mb-10 font-normal">
-          ClipShelf automatically captures your text, code snippets, visual screenshots, and colors into a zero-whitespace Bento Grid with full-text search and 100% offline privacy.
+          ClipShelf monitors your Windows clipboard offline, categorizing code, text, visual screenshots, and colors into a zero-whitespace Bento Vault.
         </p>
 
-        {/* Hero Action Buttons */}
+        {/* CTA Buttons */}
         <div className="flex flex-wrap items-center justify-center gap-4 mb-16">
           <a
             href={downloadExeUrl}
-            className="px-6 py-3.5 rounded-2xl bg-gradient-to-r from-blue-600 via-blue-500 to-cyan-500 hover:from-blue-500 hover:to-cyan-400 text-white font-bold text-sm shadow-xl shadow-blue-500/25 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5"
+            className="px-7 py-3.5 rounded-2xl bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-sm shadow-xl shadow-amber-400/15 transition-all transform hover:-translate-y-0.5 flex items-center gap-2.5"
           >
-            <Download className="w-4 h-4" />
+            <Download className="w-4 h-4 text-slate-950" />
             Download for Windows (.exe)
           </a>
           <button
             onClick={onOpenDashboard}
-            className="px-6 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-semibold text-sm border border-slate-700/80 transition-all flex items-center gap-2"
+            className="px-7 py-3.5 rounded-2xl bg-slate-900/90 hover:bg-slate-800 text-slate-200 font-semibold text-sm border border-white/10 transition-all flex items-center gap-2"
           >
-            Launch Interactive App
-            <ArrowRight className="w-4 h-4 text-blue-400" />
+            Explore Dashboard
+            <ArrowRight className="w-4 h-4 text-amber-400" />
           </button>
         </div>
 
-        {/* Floating Mockup Preview with Parallax */}
+        {/* Cinematic Mockup Frame with Parallax Perspective */}
         <div
-          className="relative max-w-5xl w-full rounded-2xl p-2 bg-gradient-to-b from-slate-700/50 to-slate-900/80 border border-slate-700/70 shadow-2xl transition-transform duration-300"
-          style={{ transform: `perspective(1000px) rotateX(${Math.max(0, 10 - scrollY * 0.03)}deg)` }}
+          className="relative max-w-5xl w-full rounded-2xl p-2.5 bg-slate-900/90 border border-white/10 shadow-2xl transition-transform duration-300"
+          style={{ transform: `perspective(1200px) rotateX(${Math.max(0, 8 - scrollY * 0.02)}deg)` }}
         >
-          <div className="bg-[#0b0f19] rounded-xl p-6 border border-slate-800 space-y-4">
-            {/* Window Header Dots */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="bg-[#0b0d14] rounded-xl p-6 border border-white/5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-white/10">
               <div className="flex items-center gap-2">
-                <span className="w-3 h-3 rounded-full bg-rose-500/80" />
-                <span className="w-3 h-3 rounded-full bg-amber-500/80" />
-                <span className="w-3 h-3 rounded-full bg-emerald-500/80" />
-                <span className="ml-2 text-xs font-mono text-slate-400">ClipShelf — Dashboard Preview</span>
+                <span className="w-3 h-3 rounded-full bg-rose-500/70" />
+                <span className="w-3 h-3 rounded-full bg-amber-500/70" />
+                <span className="w-3 h-3 rounded-full bg-emerald-500/70" />
+                <span className="ml-2 text-xs font-mono text-slate-400">ClipShelf — Bento Grid Preview</span>
               </div>
-              <span className="text-[11px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/40">
+              <span className="text-[11px] font-mono text-amber-300 bg-amber-400/10 px-2.5 py-0.5 rounded border border-amber-400/20">
                 100% Offline Mode
               </span>
             </div>
 
-            {/* Bento Grid Mock Cards */}
+            {/* Mock Bento Grid */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-left">
-              {/* Card 1: Code */}
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-white/5 space-y-2">
                 <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                  <span className="flex items-center gap-1.5 text-cyan-400 font-bold">
+                  <span className="flex items-center gap-1.5 text-sky-400 font-bold">
                     <Code className="w-3.5 h-3.5" /> CODE
                   </span>
                   <span>VS Code</span>
                 </div>
-                <pre className="text-[11px] font-mono text-cyan-300 bg-slate-950 p-2.5 rounded-lg border border-slate-800/80 line-clamp-3">
+                <pre className="text-[11px] font-mono text-sky-300 bg-[#07080c] p-3 rounded-lg border border-white/5 line-clamp-3">
                   {`const vault = await ClipShelf.init({\n  storage: 'sqlite_local',\n  privacy: 'offline_shield'\n});`}
                 </pre>
               </div>
 
-              {/* Card 2: Image OCR */}
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-white/5 space-y-2">
                 <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                  <span className="flex items-center gap-1.5 text-purple-400 font-bold">
+                  <span className="flex items-center gap-1.5 text-amber-400 font-bold">
                     <Layers className="w-3.5 h-3.5" /> IMAGE
                   </span>
                   <span>Win + Shift + S</span>
                 </div>
-                <div className="h-16 rounded-lg bg-gradient-to-r from-blue-900/40 via-purple-900/40 to-cyan-900/40 border border-slate-800 flex items-center justify-center text-xs text-slate-300 font-medium">
+                <div className="h-16 rounded-lg bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border border-white/5 flex items-center justify-center text-xs text-slate-300 font-medium">
                   📸 Screenshot Captured
                 </div>
               </div>
 
-              {/* Card 3: Color Palette */}
-              <div className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+              <div className="p-4 rounded-xl bg-slate-900/80 border border-white/5 space-y-2">
                 <div className="flex items-center justify-between text-[10px] font-mono text-slate-400">
-                  <span className="flex items-center gap-1.5 text-amber-400 font-bold">
+                  <span className="flex items-center gap-1.5 text-amber-300 font-bold">
                     <Palette className="w-3.5 h-3.5" /> COLOR
                   </span>
                   <span>Sampler</span>
                 </div>
-                <div className="flex items-center gap-3 p-2 bg-slate-950 rounded-lg border border-slate-800">
-                  <span className="w-7 h-7 rounded-lg bg-cyan-400 shadow-md" />
-                  <span className="text-xs font-mono font-bold text-slate-200">#06B6D4</span>
+                <div className="flex items-center gap-3 p-2.5 bg-[#07080c] rounded-lg border border-white/5">
+                  <span className="w-7 h-7 rounded-lg bg-amber-400 shadow-md" />
+                  <span className="text-xs font-mono font-bold text-slate-200">#E2B857</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <ChevronDown className="w-6 h-6 text-slate-500 mt-12 animate-bounce" />
+        <ChevronDown className="w-6 h-6 text-slate-600 mt-12 animate-bounce" />
       </section>
 
-      {/* SECTION 2: SCROLL-DRIVEN STICKY STORYTELLING */}
+      {/* SECTION 2: SCROLLYTELLING NARRATIVE CINEMA */}
       <section className="relative z-10 max-w-6xl mx-auto px-6 py-24">
         <div className="text-center mb-16">
-          <h2 className="text-3xl sm:text-4xl font-bold tracking-tight mb-4">
-            Engineered for Precision & Velocity
+          <span className="text-[11px] font-mono tracking-[0.2em] uppercase text-amber-400 block mb-2">
+            CHAPTER-BASED SCROLLING
+          </span>
+          <h2 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-slate-100">
+            Architected for Pure Precision
           </h2>
-          <p className="text-slate-400 text-sm sm:text-base max-w-xl mx-auto">
-            Scroll to experience how ClipShelf transforms fragmented clipboard copies into structured intelligence.
-          </p>
         </div>
 
-        {/* Interactive Sticky Feature Showcase */}
+        {/* Split Screen Cinema Stage */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
-          {/* Left Column: Story Navigation Cards */}
+          {/* Left Column: Narrative Chapters */}
           <div className="lg:col-span-5 space-y-4">
+            {/* Chapter 0 */}
             <div
-              onClick={() => setActiveStep(0)}
+              onClick={() => setActiveChapter(0)}
               className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                activeStep === 0
-                  ? 'bg-blue-950/40 border-blue-500/60 shadow-lg shadow-blue-500/10'
-                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                activeChapter === 0
+                  ? 'bg-amber-400/[0.06] border-amber-400/40 shadow-xl shadow-amber-400/5 ring-1 ring-amber-400/20'
+                  : 'bg-slate-900/50 border-white/5 hover:border-white/10'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                  <Layers className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-100">1. Bento Grid Architecture</h3>
+                <span className="text-xs font-mono text-amber-400 font-bold">01</span>
+                <h3 className="text-base font-bold text-slate-100">Zero-Whitespace Bento Grid</h3>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Zero-whitespace masonry layout that automatically categorizes Text, Links, Code, Colors, and Screenshots with 24px breathing room.
+                Adaptive masonry grid with 24px breathing room. Cards scale dynamically with guaranteed 3-4 line visible text previews.
               </p>
             </div>
 
+            {/* Chapter 1 */}
             <div
-              onClick={() => setActiveStep(1)}
+              onClick={() => setActiveChapter(1)}
               className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                activeStep === 1
-                  ? 'bg-cyan-950/40 border-cyan-500/60 shadow-lg shadow-cyan-500/10'
-                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                activeChapter === 1
+                  ? 'bg-sky-400/[0.06] border-sky-400/40 shadow-xl shadow-sky-400/5 ring-1 ring-sky-400/20'
+                  : 'bg-slate-900/50 border-white/5 hover:border-white/10'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-xl bg-cyan-500/10 text-cyan-400 border border-cyan-500/20">
-                  <Maximize2 className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-100">2. Full-Text Lightbox</h3>
+                <span className="text-xs font-mono text-sky-400 font-bold">02</span>
+                <h3 className="text-base font-bold text-slate-100">Full-Text Lightbox (TextModal)</h3>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Expand long text blocks instantly with character analytics, monospace code toggle, and one-click `.txt` file export.
+                Click any card to expand into a full-screen reader with character/word analytics, font toggles, and instant `.txt` file exports.
               </p>
             </div>
 
+            {/* Chapter 2 */}
             <div
-              onClick={() => setActiveStep(2)}
+              onClick={() => setActiveChapter(2)}
               className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                activeStep === 2
-                  ? 'bg-purple-950/40 border-purple-500/60 shadow-lg shadow-purple-500/10'
-                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                activeChapter === 2
+                  ? 'bg-purple-400/[0.06] border-purple-400/40 shadow-xl shadow-purple-400/5 ring-1 ring-purple-400/20'
+                  : 'bg-slate-900/50 border-white/5 hover:border-white/10'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
-                  <Shield className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-100">3. Offline Privacy Shield</h3>
+                <span className="text-xs font-mono text-purple-400 font-bold">03</span>
+                <h3 className="text-base font-bold text-slate-100">Kernel-Level Privacy Shield</h3>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Auto-detects and blocks password managers (*Bitwarden, 1Password, KeePass*) & secret API keys offline on your local device.
+                Automatically detects and blocks password managers (*Bitwarden, 1Password*) & secret API keys offline on your device.
               </p>
             </div>
 
+            {/* Chapter 3 */}
             <div
-              onClick={() => setActiveStep(3)}
+              onClick={() => setActiveChapter(3)}
               className={`p-6 rounded-2xl border transition-all cursor-pointer ${
-                activeStep === 3
-                  ? 'bg-emerald-950/40 border-emerald-500/60 shadow-lg shadow-emerald-500/10'
-                  : 'bg-slate-900/60 border-slate-800 hover:border-slate-700'
+                activeChapter === 3
+                  ? 'bg-emerald-400/[0.06] border-emerald-400/40 shadow-xl shadow-emerald-400/5 ring-1 ring-emerald-400/20'
+                  : 'bg-slate-900/50 border-white/5 hover:border-white/10'
               }`}
             >
               <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                  <Zap className="w-5 h-5" />
-                </div>
-                <h3 className="text-base font-bold text-slate-100">4. Native Rust Performance</h3>
+                <span className="text-xs font-mono text-emerald-400 font-bold">04</span>
+                <h3 className="text-base font-bold text-slate-100">Sub-15ms Rust Performance</h3>
               </div>
               <p className="text-xs text-slate-400 leading-relaxed">
-                Sub-15ms Win32 event loop with SQLite indexing, background hotkeys (`Ctrl+Shift+V`), and zero telemetry footprint.
+                Built on Rust winapi crate for instant clipboard polling without background CPU strain or telemetry tracking.
               </p>
             </div>
           </div>
 
-          {/* Right Column: Dynamic Interactive Display */}
-          <div className="lg:col-span-7 sticky top-24 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 min-h-[420px] flex flex-col justify-between shadow-2xl">
-            {activeStep === 0 && (
+          {/* Right Column: Dynamic Stage Showcase */}
+          <div className="lg:col-span-7 sticky top-24 bg-[#0b0d14] border border-white/10 rounded-3xl p-6 min-h-[440px] flex flex-col justify-between shadow-2xl">
+            {activeChapter === 0 && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="text-xs font-mono font-bold text-blue-400">FEATURE 01 // MASONRY BENTO GRID</span>
-                  <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">24px Gap</span>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-xs font-mono font-bold text-amber-400">CHAPTER 01 // BENTO LAYOUT</span>
+                  <span className="text-[10px] bg-slate-900 border border-white/10 px-2.5 py-0.5 rounded text-slate-400 font-mono">
+                    24px Grid Gap
+                  </span>
                 </div>
-                <p className="text-sm text-slate-300 font-medium">
-                  Content-adaptive cards scale dynamically based on text volume, screenshot aspect ratio, and color hex values.
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Content-adaptive cards scale smoothly without layout shifts, preserving exact line breaks and visual metrics.
                 </p>
-                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-3 font-mono text-xs text-slate-300">
+                <div className="p-4 bg-[#07080c] rounded-2xl border border-white/5 space-y-3 font-mono text-xs text-slate-300">
                   <div className="flex items-center justify-between text-[11px] text-slate-400">
-                    <span>Card Format: Adaptive</span>
-                    <span className="text-emerald-400">✓ 3-4 Line Visible Preview</span>
+                    <span>Format: Adaptive Bento</span>
+                    <span className="text-amber-400">✓ 3-4 Line Preview</span>
                   </div>
-                  <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-blue-300">
-                    "ClipShelf delivers zero-whitespace masonry cards with crisp typography..."
+                  <div className="p-3 bg-slate-900/90 rounded-xl border border-white/5 text-amber-200">
+                    "ClipShelf automatically structures text snippets, code, images, and colors into a zero-whitespace Bento Grid."
                   </div>
                 </div>
               </div>
             )}
 
-            {activeStep === 1 && (
+            {activeChapter === 1 && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="text-xs font-mono font-bold text-cyan-400">FEATURE 02 // FULL-TEXT LIGHTBOX</span>
-                  <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">TextModal</span>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-xs font-mono font-bold text-sky-400">CHAPTER 02 // FULL-TEXT LIGHTBOX</span>
+                  <span className="text-[10px] bg-slate-900 border border-white/10 px-2.5 py-0.5 rounded text-slate-400 font-mono">
+                    TextModal
+                  </span>
                 </div>
-                <p className="text-sm text-slate-300 font-medium">
-                  Click any card to expand into a full-screen reader with character/word analytics, font toggles, and instant text export.
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Expand long text payloads into a dedicated lightbox modal with full text analytics and monospace code toggle.
                 </p>
-                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-3 font-mono text-xs text-slate-300">
-                  <div className="flex items-center justify-between text-slate-400">
+                <div className="p-4 bg-[#07080c] rounded-2xl border border-white/5 space-y-3 font-mono text-xs text-slate-300">
+                  <div className="flex items-center justify-between text-slate-400 text-[11px]">
                     <span>Text Analytics</span>
-                    <span className="text-cyan-400">218 chars • 42 words • 6 lines</span>
+                    <span className="text-sky-300">218 chars • 42 words • 6 lines</span>
                   </div>
                   <div className="flex gap-2">
-                    <span className="px-3 py-1 bg-blue-600/20 text-blue-400 rounded-lg border border-blue-500/40 text-[11px]">
+                    <span className="px-3 py-1 bg-sky-500/20 text-sky-300 rounded-lg border border-sky-500/30 text-[11px]">
                       Copy Full Text
                     </span>
                     <span className="px-3 py-1 bg-slate-800 text-slate-300 rounded-lg text-[11px]">
@@ -337,55 +341,58 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
               </div>
             )}
 
-            {activeStep === 2 && (
+            {activeChapter === 2 && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="text-xs font-mono font-bold text-purple-400">FEATURE 03 // OFFLINE PRIVACY SHIELD</span>
-                  <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">100% Local</span>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-xs font-mono font-bold text-purple-400">CHAPTER 03 // OFFLINE PRIVACY SHIELD</span>
+                  <span className="text-[10px] bg-slate-900 border border-white/10 px-2.5 py-0.5 rounded text-slate-400 font-mono">
+                    100% Local
+                  </span>
                 </div>
-                <p className="text-sm text-slate-300 font-medium">
-                  Zero cloud uploads. Password manager process memory (*Bitwarden, 1Password*) and API secrets are filtered at kernel level.
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Zero cloud telemetry. Password manager memory handles and API keys are filtered offline at kernel level.
                 </p>
-                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-3 font-mono text-xs text-slate-300">
+                <div className="p-4 bg-[#07080c] rounded-2xl border border-white/5 space-y-3 font-mono text-xs text-slate-300">
                   <div className="flex items-center gap-2 text-rose-400">
                     <Lock className="w-4 h-4" />
                     <span>Secret Filter Active (AWS / GitHub Tokens / API Keys)</span>
                   </div>
-                  <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800 text-[11px] text-slate-400">
+                  <div className="p-2.5 bg-slate-900/90 rounded-xl border border-white/5 text-[11px] text-slate-400">
                     Process Denylist: Bitwarden.exe, 1Password.exe, KeePass.exe
                   </div>
                 </div>
               </div>
             )}
 
-            {activeStep === 3 && (
+            {activeChapter === 3 && (
               <div className="space-y-4 animate-fadeIn">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-                  <span className="text-xs font-mono font-bold text-emerald-400">FEATURE 04 // TAURI V2 + RUST ENGINE</span>
-                  <span className="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-400 font-mono">Win32 API</span>
+                <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                  <span className="text-xs font-mono font-bold text-emerald-400">CHAPTER 04 // TAURI V2 + RUST CORE</span>
+                  <span className="text-[10px] bg-slate-900 border border-white/10 px-2.5 py-0.5 rounded text-slate-400 font-mono">
+                    Win32 API
+                  </span>
                 </div>
-                <p className="text-sm text-slate-300 font-medium">
-                  Built natively on Rust winapi crate for instant clipboard polling without background CPU strain.
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  Sub-15ms clipboard event listener powered by Rust winapi crate for zero background CPU load.
                 </p>
-                <div className="p-4 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-3 font-mono text-xs text-slate-300">
+                <div className="p-4 bg-[#07080c] rounded-2xl border border-white/5 space-y-3 font-mono text-xs text-slate-300">
                   <div className="flex items-center justify-between">
                     <span>Capture Speed:</span>
                     <span className="text-emerald-400 font-bold">&lt; 15ms</span>
                   </div>
                   <div className="flex items-center justify-between">
                     <span>RAM Footprint:</span>
-                    <span className="text-cyan-400 font-bold">~ 28 MB</span>
+                    <span className="text-amber-300 font-bold">~ 28 MB</span>
                   </div>
                 </div>
               </div>
             )}
 
-            {/* Footer Control inside Card */}
-            <div className="pt-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400 font-mono">
-              <span>Step {activeStep + 1} of 4</span>
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between text-xs text-slate-400 font-mono">
+              <span>Chapter {activeChapter + 1} of 4</span>
               <button
                 onClick={onOpenDashboard}
-                className="text-blue-400 hover:underline flex items-center gap-1 font-sans font-medium"
+                className="text-amber-400 hover:underline flex items-center gap-1 font-sans font-medium"
               >
                 Try in Dashboard <ArrowRight className="w-3.5 h-3.5" />
               </button>
@@ -394,64 +401,62 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
         </div>
       </section>
 
-      {/* TECHNICAL METRICS & INTEGRITY */}
-      <section className="relative z-10 bg-slate-900/60 border-y border-slate-800 py-20 px-6">
+      {/* METRICS SECTION */}
+      <section className="relative z-10 bg-slate-900/40 border-y border-white/5 py-20 px-6">
         <div className="max-w-5xl mx-auto grid grid-cols-2 sm:grid-cols-4 gap-8 text-center">
           <div className="space-y-2">
-            <h4 className="text-3xl font-extrabold font-mono text-blue-400">&lt; 15ms</h4>
-            <p className="text-xs text-slate-400 font-medium">Clipboard Event Latency</p>
+            <h4 className="text-3xl font-extrabold font-mono text-amber-400">&lt; 15ms</h4>
+            <p className="text-xs text-slate-400 font-medium">Event Latency</p>
           </div>
           <div className="space-y-2">
-            <h4 className="text-3xl font-extrabold font-mono text-cyan-400">100%</h4>
-            <p className="text-xs text-slate-400 font-medium">Local SQLite Storage</p>
+            <h4 className="text-3xl font-extrabold font-mono text-sky-400">100%</h4>
+            <p className="text-xs text-slate-400 font-medium">Local SQLite Engine</p>
           </div>
           <div className="space-y-2">
             <h4 className="text-3xl font-extrabold font-mono text-purple-400">0%</h4>
-            <p className="text-xs text-slate-400 font-medium">Cloud Telemetry / Tracking</p>
+            <p className="text-xs text-slate-400 font-medium">Telemetry Tracking</p>
           </div>
           <div className="space-y-2">
             <h4 className="text-3xl font-extrabold font-mono text-emerald-400">v0.1.0</h4>
-            <p className="text-xs text-slate-400 font-medium">Stable Windows Release</p>
+            <p className="text-xs text-slate-400 font-medium">Stable Windows Build</p>
           </div>
         </div>
       </section>
 
-      {/* DOWNLOAD & INSTALLATION SECTION */}
+      {/* DOWNLOAD SECTION */}
       <section className="relative z-10 max-w-5xl mx-auto px-6 py-24 text-center">
         <h2 className="text-3xl sm:text-5xl font-extrabold tracking-tight mb-6">
-          Ready to Upgrade Your Clipboard?
+          Elevate Your Windows Workflow
         </h2>
         <p className="text-slate-400 text-base max-w-xl mx-auto mb-12">
-          Download ClipShelf v0.1.0 for Windows 10 & 11. Certified offline installers packaged with custom WebView2 runtime resources.
+          Download ClipShelf v0.1.0. Standalone offline installers bundled with WebView2 resources.
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-3xl mx-auto text-left mb-12">
-          {/* EXE Setup */}
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-blue-500/50 transition flex flex-col justify-between space-y-4 shadow-xl">
+          <div className="p-6 rounded-2xl bg-slate-900/90 border border-white/10 hover:border-amber-400/50 transition flex flex-col justify-between space-y-4 shadow-xl">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20 font-mono text-xs font-bold">
+                <span className="p-2 rounded-xl bg-amber-400/10 text-amber-300 border border-amber-400/20 font-mono text-xs font-bold">
                   .EXE INSTALLER
                 </span>
                 <span className="text-[10px] font-mono text-slate-500">7.18 MB</span>
               </div>
               <h3 className="text-lg font-bold text-slate-100">ClipShelf-0.1.0-Setup.exe</h3>
-              <p className="text-xs text-slate-400 mt-1">Recommended for desktop Windows installations.</p>
+              <p className="text-xs text-slate-400 mt-1">Recommended for standard desktop Windows installations.</p>
             </div>
             <a
               href={downloadExeUrl}
-              className="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs text-center transition flex items-center justify-center gap-2 shadow-lg shadow-blue-600/20"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-300 hover:to-amber-400 text-slate-950 font-bold text-xs text-center transition flex items-center justify-center gap-2 shadow-lg shadow-amber-400/10"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-slate-950" />
               Download .EXE Setup
             </a>
           </div>
 
-          {/* MSI Package */}
-          <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800 hover:border-emerald-500/50 transition flex flex-col justify-between space-y-4 shadow-xl">
+          <div className="p-6 rounded-2xl bg-slate-900/90 border border-white/10 hover:border-emerald-400/50 transition flex flex-col justify-between space-y-4 shadow-xl">
             <div>
               <div className="flex items-center justify-between mb-3">
-                <span className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs font-bold">
+                <span className="p-2 rounded-xl bg-emerald-400/10 text-emerald-300 border border-emerald-400/20 font-mono text-xs font-bold">
                   .MSI PACKAGE
                 </span>
                 <span className="text-[10px] font-mono text-slate-500">9.82 MB</span>
@@ -461,9 +466,9 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
             </div>
             <a
               href={downloadMsiUrl}
-              className="w-full py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs text-center transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/20"
+              className="w-full py-3.5 rounded-xl bg-gradient-to-r from-emerald-400 to-emerald-500 hover:from-emerald-300 hover:to-emerald-400 text-slate-950 font-bold text-xs text-center transition flex items-center justify-center gap-2 shadow-lg shadow-emerald-400/10"
             >
-              <Download className="w-4 h-4" />
+              <Download className="w-4 h-4 text-slate-950" />
               Download .MSI Package
             </a>
           </div>
@@ -471,13 +476,13 @@ export const LandingPage: React.FC<LandingPageProps> = ({ onOpenDashboard }) => 
       </section>
 
       {/* FOOTER */}
-      <footer className="relative z-10 border-t border-slate-800/80 px-6 py-8 bg-[#07090e]">
+      <footer className="relative z-10 border-t border-white/5 px-6 py-8 bg-[#07080c]">
         <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-slate-500">
           <div className="flex items-center gap-2">
             <img src={logoImg} alt="ClipShelf Logo" className="w-5 h-5 opacity-70" />
             <span className="font-mono text-slate-400">ClipShelf © 2026</span>
             <span>•</span>
-            <span>Local-First Clipboard Vault</span>
+            <span>Local-First Knowledge Vault</span>
           </div>
 
           <div className="flex items-center gap-4">
