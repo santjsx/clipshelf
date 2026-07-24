@@ -19,6 +19,7 @@ dist-isolation
 05-UI-UX-DESIGN.md
 06-DEVELOPMENT-ROADMAP.md
 0*.md
+RELEASE_NOTES.md
 
 # Environment / OS / IDE
 .env

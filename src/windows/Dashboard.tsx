@@ -5,6 +5,7 @@ import { ClipCard } from '../components/ClipCard';
 import { ClipRow } from '../components/ClipRow';
 import { BoardColumn } from '../components/BoardColumn';
 import { useToast } from '../components/Toast';
+import logoImg from '../assets/logo.png';
 import {
   Search,
   LayoutGrid,
@@ -120,9 +121,11 @@ export const DashboardWindow: React.FC = () => {
       {/* Top Header Navigation Bar */}
       <header className="h-14 border-b border-slate-800/80 px-4 flex items-center justify-between bg-slate-900/90 backdrop-blur-xl z-20">
         <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center font-bold text-white shadow-lg shadow-blue-500/20 border border-blue-400/30">
-            CS
-          </div>
+          <img
+            src={logoImg}
+            alt="ClipShelf Logo"
+            className="w-8 h-8 rounded-xl shadow-lg shadow-blue-500/20 border border-blue-400/30 object-cover"
+          />
           <div>
             <h1 className="font-bold text-sm tracking-wide text-slate-100 flex items-center gap-2">
               ClipShelf
